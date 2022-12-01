@@ -1,0 +1,8 @@
+default: run
+
+build:
+    nasm -g -f elf64 -o day01.o day01.asm
+    gcc -o day01 day01.o
+
+run: build
+    <input.txt ./day01
