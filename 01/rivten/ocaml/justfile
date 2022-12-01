@@ -1,0 +1,6 @@
+default: run 
+build:
+    ocamlopt -o day01 day01.ml
+
+run: build
+    <input.txt ./day01
