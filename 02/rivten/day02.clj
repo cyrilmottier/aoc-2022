@@ -44,8 +44,6 @@
              (string-to-rps other-player) 
              (string-to-result result)))))
 
-(map get-score-2 (clojure.string/split (slurp "input.txt") #"\n"))
-
 (as-> (slurp "input.txt") $
     (clojure.string/split $ #"\n")
     (vector (reduce + (map get-score $)) 
