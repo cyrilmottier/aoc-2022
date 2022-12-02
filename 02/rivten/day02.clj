@@ -37,9 +37,6 @@
     "Y" :draw
     "Z" :win))
 
-(let [[other-player result] (clojure.string/split "B X" #" ")]
-  (get-my-move (string-to-rps other-player) (string-to-result result)))
-
 (defn get-score-2 [line]
   (let [[other-player result] (clojure.string/split line #" ")]
     (score (string-to-rps other-player) 
