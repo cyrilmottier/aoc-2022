@@ -1,2 +1,3 @@
 run:
     <input.txt elixir -r day03.ex -e Day03.result
+    <input.txt elixir -r day03.ex -e Day03.result2
