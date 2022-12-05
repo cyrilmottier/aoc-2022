@@ -1,9 +1,5 @@
 type move = { start_index : int; end_index : int; move_count : int }
 
-let input =
-  In_channel.with_open_bin "input.txt" In_channel.input_all
-  |> String.split_on_char '\n'
-
 let parse_input input =
   let move_unparsed, start_pos =
     List.partition (String.starts_with ~prefix:"move") input
@@ -27,6 +23,17 @@ let rec make_move piles move =
       let x = Stack.pop start_stack in
       Stack.push x end_stack;
       make_move piles { move_count = c - 1; start_index = si; end_index = ei }
+
+let rec make_move_2 piles tmp_stack move =
+  match move with
+  | { move_count = 0; start_index = _; end_index = ei } ->
+      Stack.iter (fun x -> Stack.push x piles.(ei - 1)) tmp_stack;
+      Stack.clear tmp_stack
+  | { move_count = c; start_index = si; end_index = ei } ->
+      let x = Stack.pop piles.(si - 1) in
+      Stack.push x tmp_stack;
+      make_move_2 piles tmp_stack
+        { move_count = c - 1; start_index = si; end_index = ei }
 
 let piles =
   let tmp = Array.init 9 (fun _ -> Stack.create ()) in
@@ -88,8 +95,29 @@ let piles =
   Stack.push 'S' tmp.(8);
   tmp
 
-let () =
-  parse_input input |> List.iter (make_move piles);
+(**
+let piles =
+  let tmp = Array.init 3 (fun _ -> Stack.create ()) in
+  Stack.push 'Z' tmp.(0);
+  Stack.push 'N' tmp.(0);
+  Stack.push 'M' tmp.(1);
+  Stack.push 'C' tmp.(1);
+  Stack.push 'D' tmp.(1);
+  Stack.push 'P' tmp.(2);
+  tmp
+**)
+
+let input =
+  In_channel.with_open_bin "input.txt" In_channel.input_all
+  |> String.split_on_char '\n'
+
+let print_cargo piles =
   Array.iter
-    (fun s -> Stack.top s |> print_char)
+    (fun s ->
+      Stack.iter print_char s;
+      print_newline ())
     piles
+
+let () =
+  parse_input input |> List.iter (make_move_2 piles (Stack.create ()));
+  Array.iter (fun s -> Stack.top s |> print_char) piles
