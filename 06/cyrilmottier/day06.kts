@@ -1,7 +1,7 @@
 import java.io.File
 
-fun startOfMessageIndex(length: Int) = length + File("input.txt").readLines()
-    .first()
+fun startOfMessageIndex(length: Int) = length + File("input.txt")
+    .readText()
     .windowed(length, 1)
     .indexOfFirst { it.groupBy { it }.size == length }
 
