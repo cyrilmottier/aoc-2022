@@ -1,4 +1,4 @@
-import { readFile } from "fs/promises";
+import { readFile } from "fs/promises"
 
 console.log(
   (await readFile("./input.txt", { encoding: "utf8" }))
@@ -16,9 +16,9 @@ console.log(
     .map(
       ([firstElf, secondElf, thirdElf]) =>
         firstElf
-          .filter((c) => secondElf.includes(c))
-          .filter((c) => thirdElf.includes(c))[0]
+          .filter(c => secondElf.includes(c))
+          .filter(c => thirdElf.includes(c))[0]
     )
-    .map((c) => c.charCodeAt(0) - (c === c.toLowerCase() ? 96 : 38))
+    .map(c => c.charCodeAt(0) - (c === c.toLowerCase() ? 96 : 38))
     .reduce((acc, current) => acc + current, 0)
-);
+)

@@ -1,4 +1,4 @@
-import { readFile } from "fs/promises";
+import { readFile } from "fs/promises"
 console.log(
   (await readFile("./input.txt", { encoding: "utf8" }))
     .split("\n")
@@ -11,4 +11,4 @@ console.log(
     )
     .sort((a, b) => b - a)
     .reduce((acc, current, i) => (i < 3 ? acc + current : acc), 0)
-);
+)

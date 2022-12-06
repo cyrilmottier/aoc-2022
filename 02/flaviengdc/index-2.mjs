@@ -1,16 +1,16 @@
-import { readFile } from "fs/promises";
+import { readFile } from "fs/promises"
 
 const MATCH_POINTS = {
   LOOSE: 0,
   DRAW: 3,
   WIN: 6,
-};
+}
 
 const PICK_POINTS = {
   X: 1,
   Y: 2,
   Z: 3,
-};
+}
 
 const PICK_MATCH_TABLE = {
   X: {
@@ -28,7 +28,7 @@ const PICK_MATCH_TABLE = {
     B: "Z",
     C: "X",
   },
-};
+}
 
 const SCORE_TABLE = {
   X: {
@@ -46,15 +46,15 @@ const SCORE_TABLE = {
     B: PICK_POINTS.Z + MATCH_POINTS.WIN,
     C: PICK_POINTS.Z + MATCH_POINTS.DRAW,
   },
-};
+}
 
 console.log(
   (await readFile("./input.txt", { encoding: "utf8" }))
     .split("\n")
-    .map((l) => l.split(" "))
+    .map(l => l.split(" "))
     .reduce(
       (acc, [elfPick, roundOutcome]) =>
         (acc += SCORE_TABLE[PICK_MATCH_TABLE[roundOutcome][elfPick]][elfPick]),
       0
     )
-);
+)
