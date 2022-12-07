@@ -1,33 +1,34 @@
 (defn get-directory-size
-  [sum-of-big-directory-size current-directory-size input]
+  [directory-sizes current-directory-size input]
   (cond 
-    (empty? input) [sum-of-big-directory-size current-directory-size input]
+    (empty? input) [(conj directory-sizes current-directory-size) current-directory-size input]
     (re-find #"^\$ cd \.\." (first input)) 
-    [(if 
-       (< current-directory-size 100000) 
-       (+ current-directory-size sum-of-big-directory-size) 
-       sum-of-big-directory-size) 
+    [(conj directory-sizes current-directory-size) 
      current-directory-size 
      (rest input)]
 
     (re-find #"^\$ cd" (first input)) 
-    (let [[sum-of-big-directory-size in-directory-size input] 
-          (get-directory-size sum-of-big-directory-size 0 (rest input))]
+    (let [[directory-sizes in-directory-size input] 
+          (get-directory-size directory-sizes 0 (rest input))]
       (get-directory-size 
-        sum-of-big-directory-size 
+        directory-sizes 
         (+ in-directory-size current-directory-size) 
         input))
 
     (re-find #"^\$ ls" (first input))
-    (get-directory-size sum-of-big-directory-size current-directory-size (rest input))
+    (get-directory-size directory-sizes current-directory-size (rest input))
 
     (re-find #"^dir" (first input)) 
-    (get-directory-size sum-of-big-directory-size current-directory-size (rest input))
+    (get-directory-size directory-sizes current-directory-size (rest input))
 
     (re-find #"^\d+ " (first input))
     (let [file-size (Integer/parseInt (first (clojure.string/split (first input) #" ")))]
-      (get-directory-size sum-of-big-directory-size (+ file-size current-directory-size) (rest input)))
+      (get-directory-size directory-sizes (+ file-size current-directory-size) (rest input)))
 
     :else ((do (tap> input) (assert false)))))
       
-(get-directory-size 0 0 (clojure.string/split (slurp "input.txt") #"\n"))
+(reduce + (filter #(< % 100000) (first (get-directory-size [] 0 (clojure.string/split (slurp "input.txt") #"\n")))))
+
+(let [sizes (first (get-directory-size [] 0 (clojure.string/split (slurp "input.txt") #"\n")))]
+  (let [space-to-free (- 30000000 (- 70000000 (apply max sizes)))]
+    (apply min (filter #(< space-to-free %) sizes))))
