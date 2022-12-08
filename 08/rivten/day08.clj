@@ -34,3 +34,36 @@
      (filter identity)
      (count))
 
+; part 2
+(defn get-generic-score [tree-height visibility]
+  (let [[taken remaining] (split-with #(< % tree-height) visibility)]
+    (if (not-empty remaining)
+      (+ 1 (count taken))
+      (count taken))))
+
+(defn left-score [forest transposed-forest row col]
+  (let [tree-height ((forest row) col)]
+    (get-generic-score tree-height (reverse (get-left-visibility forest transposed-forest row col)))))
+
+(defn right-score [forest transposed-forest row col]
+  (let [tree-height ((forest row) col)]
+    (get-generic-score tree-height (get-right-visibility forest transposed-forest row col))))
+
+(defn top-score [forest transposed-forest row col]
+  (let [tree-height ((forest row) col)]
+    (get-generic-score tree-height (reverse (get-top-visibility forest transposed-forest row col)))))
+
+(defn bottom-score [forest transposed-forest row col]
+  (let [tree-height ((forest row) col)]
+    (get-generic-score tree-height (get-bottom-visibility forest transposed-forest row col))))
+
+(defn scenic-score [forest transposed-forest row col]
+  (apply * (map #(% forest transposed-forest row col) [top-score bottom-score left-score right-score])))
+
+(->> (let [row-count (count forest)
+           col-count (count (forest 0))
+           transposed-forest (transpose forest)]
+       (for [row (range row-count)
+             col (range col-count)]
+         (scenic-score forest transposed-forest row col)))
+     (reduce max))
