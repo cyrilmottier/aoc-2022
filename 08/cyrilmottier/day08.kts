@@ -71,3 +71,4 @@ for (col in 0 until forestWidth) {
 forest
     .flatMap { it }
     .count { it.visibilityCount != 0 }
+
