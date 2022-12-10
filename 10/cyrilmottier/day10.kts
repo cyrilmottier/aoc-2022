@@ -19,19 +19,10 @@ val part1 = history.foldIndexed(0) { index, acc, register ->
 println(part1)
 
 val part2 = buildString {
-    for (row in 0 until 6) {
-        for (col in 0 until 40) {
-            val cycle = row * 40 + col
-            val register = history[cycle]
-            append(
-                if (col >= register - 1 && col <= register + 1) {
-                    '#'
-                } else {
-                    '.'
-                }
-            )
-        }
-        append('\n')
+    history.forEachIndexed { cycle, register ->
+        val col = cycle.mod(40)
+        if (cycle != 0 && col == 0) append('\n')
+        append(if (col in register - 1..register + 1) '#' else '.')
     }
 }
 println(part2)
