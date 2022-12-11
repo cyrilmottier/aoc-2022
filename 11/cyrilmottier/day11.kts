@@ -1,88 +1,62 @@
 import java.io.File
 
-fun <T> List<T>.split(predicate: (T) -> Boolean): List<List<T>> {
-    return this
-        .flatMapIndexed { index, x ->
-            when {
-                index == 0 || index == this.lastIndex -> listOf(index)
-                predicate(x) -> listOf(index - 1, index + 1)
-                else -> emptyList()
-            }
-        }
-        .windowed(size = 2, step = 2) { (from, to) -> this.slice(from..to) }
-}
-
 data class Monkey(
-    val items: ArrayDeque<Int>,
-    val operation: (Int) -> Int,
+    val items: MutableList<Long>,
+    val operation: (Long) -> Long,
     val divisibleBy: Int,
     val trueThrow: Int,
     val falseThrow: Int,
-    var inspectCount: Int = 0
+    var passes: Int = 0
 )
 
-val monkeys = File("input.txt").readLines()
-    .split { it == "" }
-    .map {
-        val items = it[1]
-            .removePrefix("  Starting items: ")
-            .split(", ")
-            .map { it.toInt() }
-            .let { ArrayDeque(it) }
+fun solve(times: Int, divide: Int): Long {
+    var modulo = 1
+    val monkeys = File("input.txt").readText()
+        .split("\n\n")
+        .map { monkey ->
+            val lines = monkey.split("\n")
 
-        val operation = it[2]
-            .removePrefix("  Operation: new = ")
-            .let {
-                when {
-                    "*" in it -> with(it.split(" * ")) {
-                        { old: Int -> (this[0].toIntOrNull() ?: old) * (this[1].toIntOrNull() ?: old) }
-                    }
-                    "+" in it -> with(it.split(" + ")) {
-                        { old: Int -> (this[0].toIntOrNull() ?: old) + (this[1].toIntOrNull() ?: old) }
-                    }
-                    else -> throw UnsupportedOperationException()
+            val items = lines[1].split(": ")[1].split(", ").map { it.toLong() }.toMutableList()
+            val operation = lines[2].split(" = ")[1]
+                .let {
+                    val (_, operator, operand) = it.split(" ")
+                    val f = mapOf<String, Long.(Long) -> Long>("*" to Long::times, "+" to Long::plus)[operator]!!
+                    { old: Long -> old.f(operand.toLongOrNull() ?: old) }
                 }
-            }
 
-        val divisibleBy = it[3]
-            .removePrefix("  Test: divisible by ")
-            .let { it.toInt() }
+            val divisibleBy = lines[3].split("y ")[1].toInt()
+            val trueThrow = lines[4].split("y ")[1].toInt()
+            val falseThrow = lines[5].split("y ")[1].toInt()
 
-        val trueThrow = it[4]
-            .removePrefix("    If true: throw to monkey ")
-            .let { it.toInt() }
+            modulo *= divisibleBy
 
-        val falseThrow = it[5]
-            .removePrefix("    If false: throw to monkey ")
-            .let { it.toInt() }
-
-        Monkey(
-            items,
-            operation,
-            divisibleBy,
-            trueThrow,
-            falseThrow
-        )
-    }
-
-repeat(20) {
-    monkeys.forEach { monkey ->
-        val removeCount = monkey.items.size
-        monkey.inspectCount += removeCount
-        monkey.items.forEach { item ->
-            val level = monkey.operation(item) / 3
-            if (level.mod(monkey.divisibleBy) == 0) {
-                monkeys[monkey.trueThrow].items.addLast(level)
-            } else {
-                monkeys[monkey.falseThrow].items.addLast(level)
-            }
+            Monkey(
+                items,
+                operation,
+                divisibleBy,
+                trueThrow,
+                falseThrow
+            )
         }
-        repeat(removeCount) { monkey.items.removeFirst() }
+
+    repeat(times) {
+        monkeys.forEach { monkey ->
+            monkey.passes += monkey.items.size
+            monkey.items.forEach { item ->
+                val level = (monkey.operation(item) / divide) % modulo
+                val newIndex = if (level % monkey.divisibleBy == 0L) monkey.trueThrow else monkey.falseThrow
+                monkeys[newIndex].items.add(level)
+            }
+            monkey.items.clear()
+        }
     }
+
+    return monkeys
+        .map { it.passes }
+        .sortedDescending()
+        .take(2)
+        .fold(1L) { acc, item -> acc * item.toLong() }
 }
 
-monkeys
-    .map { it.inspectCount }
-    .sortedDescending()
-    .take(2)
-    .fold(1) { acc, item -> acc * item }
+println(solve(20, 3))
+println(solve(10000, 1))
