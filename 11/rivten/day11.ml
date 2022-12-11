@@ -4,6 +4,7 @@ type monkey = {
   test_func : int -> bool;
   monkey_true : int;
   monkey_false : int;
+  div: int;
 }
 
 let get_starting_items line =
@@ -55,6 +56,7 @@ let parse_monkey monkey_id_line starting_item_line operation_line test_line
     test_func = get_test_func test_line;
     monkey_true = get_monkey_index monkey_true_line;
     monkey_false = get_monkey_index monkey_false_line;
+    div = get_monkey_index test_line;
   }
 
 let rec parse_monkeys input =
@@ -83,6 +85,25 @@ let do_round input monkey_items monkey_index =
   | Some worry_level ->
       let monkey_data = Hashtbl.find input monkey_index in
       let next_worry_level = monkey_data.stress_op worry_level / 3 in
+      if monkey_data.test_func next_worry_level then
+        Hashtbl.find monkey_items monkey_data.monkey_true
+        |> Queue.push next_worry_level
+      else
+        Hashtbl.find monkey_items monkey_data.monkey_false
+        |> Queue.push next_worry_level
+
+let rec pgcd a b = match b with
+| 0 -> a
+| _ -> pgcd b (a mod b)
+
+let ppcm a b = (a * b) / (pgcd a b)
+
+let do_round_2 input monkey_items monkey_index pgcd_monkeys =
+  match Hashtbl.find monkey_items monkey_index |> Queue.take_opt with
+  | None -> ()
+  | Some worry_level ->
+      let monkey_data = Hashtbl.find input monkey_index in
+      let next_worry_level = (monkey_data.stress_op worry_level mod pgcd_monkeys) in
       if monkey_data.test_func next_worry_level then
         Hashtbl.find monkey_items monkey_data.monkey_true
         |> Queue.push next_worry_level
@@ -137,3 +158,55 @@ let part1 =
       inspect_count_table (0, 0)
   in
   first * second
+
+let part2 =
+  let input_data =
+    let h = Hashtbl.create 8 in
+    List.iteri (fun i monkey_data -> Hashtbl.add h i monkey_data) input;
+    h
+  in
+  let monkey_items =
+    let h = Hashtbl.create 8 in
+    List.iteri
+      (fun i monkey_data ->
+        let q = Queue.create () in
+        List.iter (fun item -> Queue.add item q) monkey_data.starting_items;
+        Hashtbl.add h i q)
+      input;
+    h
+  in
+  let inspect_count_table =
+    let h = Hashtbl.create 8 in
+    List.iteri (fun i monkey_data -> Hashtbl.add h i 0) input;
+    h
+  in
+  let monkey_count = Hashtbl.length monkey_items in
+  let ppcm_monkey = List.map (fun m -> m.div) input |> List.fold_left ppcm 1 in
+  for round_index = 1 to 10000 do
+    for monkey_index = 0 to monkey_count - 1 do
+      while not (Queue.is_empty (Hashtbl.find monkey_items monkey_index)) do
+        Hashtbl.replace inspect_count_table monkey_index
+          (1 + Hashtbl.find inspect_count_table monkey_index);
+        do_round_2 input_data monkey_items monkey_index ppcm_monkey;
+        (*
+        Printf.printf "----\nRound %i - Monkey %i\n----\n" round_index
+          monkey_index;
+        print_monkey_items monkey_items
+        *)
+      done
+    done
+  done;
+  Hashtbl.iter
+    (fun monkey_index inspect_count ->
+      Printf.printf "Monkey %i inspected %i items\n" monkey_index inspect_count)
+    inspect_count_table;
+  let first, second =
+    Hashtbl.fold
+      (fun _ inspect_count (f, s) ->
+        if inspect_count > f then (inspect_count, f)
+        else if inspect_count > s then (f, inspect_count)
+        else (f, s))
+      inspect_count_table (0, 0)
+  in
+  print_int (first * second); print_newline ()
+
