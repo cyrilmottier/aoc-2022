@@ -4,7 +4,7 @@ type monkey = {
   test_func : int -> bool;
   monkey_true : int;
   monkey_false : int;
-  div: int;
+  div : int;
 }
 
 let get_starting_items line =
@@ -92,18 +92,17 @@ let do_round input monkey_items monkey_index =
         Hashtbl.find monkey_items monkey_data.monkey_false
         |> Queue.push next_worry_level
 
-let rec pgcd a b = match b with
-| 0 -> a
-| _ -> pgcd b (a mod b)
-
-let ppcm a b = (a * b) / (pgcd a b)
+let rec pgcd a b = match b with 0 -> a | _ -> pgcd b (a mod b)
+let ppcm a b = a * b / pgcd a b
 
 let do_round_2 input monkey_items monkey_index pgcd_monkeys =
   match Hashtbl.find monkey_items monkey_index |> Queue.take_opt with
   | None -> ()
   | Some worry_level ->
       let monkey_data = Hashtbl.find input monkey_index in
-      let next_worry_level = (monkey_data.stress_op worry_level mod pgcd_monkeys) in
+      let next_worry_level =
+        monkey_data.stress_op worry_level mod pgcd_monkeys
+      in
       if monkey_data.test_func next_worry_level then
         Hashtbl.find monkey_items monkey_data.monkey_true
         |> Queue.push next_worry_level
@@ -187,7 +186,7 @@ let part2 =
       while not (Queue.is_empty (Hashtbl.find monkey_items monkey_index)) do
         Hashtbl.replace inspect_count_table monkey_index
           (1 + Hashtbl.find inspect_count_table monkey_index);
-        do_round_2 input_data monkey_items monkey_index ppcm_monkey;
+        do_round_2 input_data monkey_items monkey_index ppcm_monkey
         (*
         Printf.printf "----\nRound %i - Monkey %i\n----\n" round_index
           monkey_index;
@@ -208,5 +207,5 @@ let part2 =
         else (f, s))
       inspect_count_table (0, 0)
   in
-  print_int (first * second); print_newline ()
-
+  print_int (first * second);
+  print_newline ()
