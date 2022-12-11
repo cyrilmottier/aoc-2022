@@ -27,3 +27,18 @@ let day01 =
     (fun acc cycle_index -> acc + signal_strength cycles cycle_index)
     0
     [ 20; 60; 100; 140; 180; 220 ]
+
+let draw_crt cycle_index x =
+  let pos = (cycle_index mod 40) + 1 in
+  let overlap = pos == x || pos == x + 1 || pos == x + 2 in
+  if overlap then '#' else '.'
+
+let draw pixel_index pixel =
+  print_char pixel;
+  if pixel_index mod 40 == 39 then print_newline ()
+
+let day02 =
+  In_channel.with_open_bin "input.txt" In_channel.input_all
+  |> String.trim |> String.split_on_char '\n' |> List.map parse_command
+  |> List.fold_left make_cycles ([], 1)
+  |> fun (cycles, _) -> List.rev cycles |> List.mapi draw_crt |> List.iteri draw
