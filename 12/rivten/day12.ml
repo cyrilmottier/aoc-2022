@@ -70,4 +70,16 @@ let g =
   done;
   g
 
-let () = Printf.printf "%i\n" (dijkstra g s e)
+let part1 = Printf.printf "%i\n" (dijkstra g s e)
+
+let part2 =
+    let poses = 
+        let p = ref [] in
+        for i = 0 to height - 1 do
+            for j = 0 to width - 1 do
+                if input.(i).(j) == 97 then p := (graph_index i j width)::!p
+            done
+        done;
+        !p
+    in
+    List.fold_left min (dijkstra g s e) (List.map (fun a -> dijkstra g a e) poses)
