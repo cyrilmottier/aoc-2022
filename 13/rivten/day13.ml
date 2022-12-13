@@ -59,3 +59,31 @@ let part1 =
   |> List.mapi (fun i [ pa; pb ] -> (i + 1, compare_packet pa pb == -1))
   |> List.filter_map (fun (i, b) -> if b then Some i else None)
   |> List.fold_left ( + ) 0
+
+let div_a = PacketList [ PacketList [ PacketInt 2 ] ]
+let div_b = PacketList [ PacketList [ PacketInt 6 ] ]
+
+let rec print_packet p =
+  match p with
+  | PacketInt i -> Printf.printf " %i " i
+  | PacketList l ->
+      Printf.printf "[ ";
+      List.iter print_packet l;
+      Printf.printf " ]"
+
+let rec find_index p ps i =
+  match ps with
+  | [] -> failwith "not found"
+  | x :: _ when compare_packet p x == 0 -> i
+  | _ :: pss -> find_index p pss (i + 1)
+
+let part2 =
+  In_channel.with_open_bin "input.txt" In_channel.input_all
+  |> String.trim |> String.split_on_char '\n'
+  |> List.filter (fun s -> String.length s != 0)
+  |> List.map (fun s ->
+         let p, _ = parse_packet s in
+         p)
+  |> fun l ->
+  div_a :: div_b :: l |> List.sort compare_packet |> fun l ->
+  find_index div_a l 1 * find_index div_b l 1
