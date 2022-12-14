@@ -31,30 +31,62 @@ let maxHeight =
 
 echo maxHeight
 
-var unit = 0
 let sandStart = (500, 0)
 
+let elemsCopy = elems
+block part1:
+  var unitPart1 = 0
+
+  while true:
+    var currentSandP = sandStart
+    echo "new sand"
+    while true:
+      if currentSandP[1] > maxHeight:
+        echo unitPart1
+        break part1
+      if (currentSandP[0], currentSandP[1] + 1) notin elems:
+        currentSandP[1] += 1
+        echo "sand", currentSandP
+        continue
+      if (currentSandP[0] - 1, currentSandP[1] + 1) notin elems:
+        currentSandP[0] -= 1
+        echo "sand", currentSandP
+        continue
+      if (currentSandP[0] + 1, currentSandP[1] + 1) notin elems:
+        currentSandP[0] += 1
+        echo "sand", currentSandP
+        continue
+      elems.incl(currentSandP)
+      echo "adding sand at ", currentSandP
+      break
+    unitPart1 += 1
+
+elems = elemsCopy
+
+var unitPart2 = 0
 while true:
   var currentSandP = sandStart
   echo "new sand"
   while true:
-    if currentSandP[1] > maxHeight:
-      echo unit
-      quit()
+    if currentSandP[1] == maxHeight + 1:
+      elems.incl(currentSandP)
+      echo "adding sand at ", currentSandP
+      break
     if (currentSandP[0], currentSandP[1] + 1) notin elems:
       currentSandP[1] += 1
-      echo "sand", currentSandP
       continue
     if (currentSandP[0] - 1, currentSandP[1] + 1) notin elems:
       currentSandP[0] -= 1
-      echo "sand", currentSandP
       continue
     if (currentSandP[0] + 1, currentSandP[1] + 1) notin elems:
       currentSandP[0] += 1
-      echo "sand", currentSandP
       continue
+    if currentSandP == sandStart:
+      unitPart2 += 1
+      echo unitPart2
+      quit()
     elems.incl(currentSandP)
     echo "adding sand at ", currentSandP
     break
-  unit += 1
+  unitPart2 += 1
 
