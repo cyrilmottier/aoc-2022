@@ -22,8 +22,8 @@ let sensorsDistance = sensorsBeacon.map((t) => (t[0], manahattanDistance(t[0], t
 let knownBeacons = sensorsBeacon.map((t) => t[1]).toHashSet()
 echo knownBeacons
 
-let m = min(sensorsDistance.map((s) => s[0].y - s[1]))
-let M = max(sensorsDistance.map((s) => s[0].y + s[1]))
+let m = min(sensorsDistance.map((s) => s[0].x - s[1]))
+let M = max(sensorsDistance.map((s) => s[0].x + s[1]))
 
 var count = 0
 for x in countup(m, M):
