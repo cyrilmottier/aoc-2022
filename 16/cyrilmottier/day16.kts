@@ -44,7 +44,11 @@ worldData.forEach { valve, _ ->
     }
 }
 
+val cache = mutableMapOf<Triple<Int, String, Int>, Int>()
+
 fun step(time: Int, valveId: String, opened: Int): Int {
+    val cacheKey = Triple(time, valveId, opened)
+    cache[cacheKey]?.also { return it }
     val valve = world[valveId]!!
     var max = 0
     valve.forEach { v, _ ->
@@ -58,6 +62,7 @@ fun step(time: Int, valveId: String, opened: Int): Int {
             }
         }
     }
+    cache[cacheKey] = max
     return max
 }
 
