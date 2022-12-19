@@ -65,5 +65,16 @@ fun step(time: Int, valveId: String, opened: Int): Int {
 val duration = measureTime {
     println(step(30, "AA", 0))
 }
-println("Done in $duration")
+println("Step 1 done in $duration")
 
+
+@OptIn(kotlin.time.ExperimentalTime::class)
+val duration2 = measureTime {
+    var max = 0
+    val b = 1.shl(nonZeroPressure.size) - 1
+    for (i in 0..b) {
+        max = max(max, step(26, "AA", i) + step(26, "AA", b.xor(i)))
+    }
+    println(max)
+}
+println("Step 2 done in $duration2")
