@@ -2,15 +2,15 @@ import java.io.File
 import kotlin.time.measureTime
 
 sealed class Expression
-data class Constant(val value: Long): Expression()
-data class Operation(val operation: Char, val left: String, val right: String): Expression()
+data class Constant(val value: Long) : Expression()
+data class Operation(val operation: Char, val left: String, val right: String) : Expression()
 
 val expressions = File("input.txt").readLines()
     .fold(mutableMapOf<String, Expression>()) { acc, line ->
         val (variableName, expression) = line.split(": ")
         val constant = expression.toLongOrNull()
         acc[variableName] = if (constant != null) {
-             Constant(constant)
+            Constant(constant)
         } else {
             val left = expression.slice(0..3)
             val right = expression.slice(7..10)
@@ -43,3 +43,4 @@ val duration = measureTime {
     println(compute("root"))
 }
 println("Took $duration")
+
