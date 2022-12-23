@@ -1,5 +1,7 @@
 import java.io.File
 
+typealias World = Map<Point, Char>
+
 data class Point(
     val x: Int,
     val y: Int,
@@ -25,63 +27,78 @@ val ADJACENT_OFFSET = mapOf(
     EAST to listOf(1 to -1, 1 to 0, 1 to 1)
 )
 
-val world = File("input.txt").readLines()
-    .foldIndexed(mutableMapOf<Point, Char>()) { rowIndex, acc, row ->
-        row.forEachIndexed { colIndex, cell ->
-            acc[Point(colIndex, rowIndex)] = cell
-        }
-        acc
-    }
-
-dumpWorld()
-
-var directionIndex = 0
-var round = 0
-
-while (round < 10) {
-    // Round 1
-    val proposals = world
-        .filter { it.value == '#' }
-        .mapNotNull { (point, _) ->
-            // Can we move?
-            if (ADJACENT_OFFSETS.any { (dx, dy) -> world[Point(point.x + dx, point.y + dy)] == '#' }) {
-                // Try to move
-                var tries = 0
-                while (tries < DIRECTIONS.size) {
-                    val direction = DIRECTIONS[(directionIndex + tries) % DIRECTIONS.size]
-                    if (ADJACENT_OFFSET[direction]!!.all { (dx, dy) -> world[Point(point.x + dx, point.y + dy)] != '#' }) {
-                        val newPoint = when (direction) {
-                            NORTH -> Point(point.x, point.y - 1)
-                            SOUTH -> Point(point.x, point.y + 1)
-                            WEST -> Point(point.x - 1, point.y)
-                            EAST -> Point(point.x + 1, point.y)
-                            else -> throw IllegalArgumentException()
-                        }
-                        return@mapNotNull point to newPoint
-                    }
-                    tries++
-                }
+fun simulate(part2: Boolean): Int {
+    val world = File("input.txt").readLines()
+        .foldIndexed(mutableMapOf<Point, Char>()) { rowIndex, acc, row ->
+            row.forEachIndexed { colIndex, cell ->
+                acc[Point(colIndex, rowIndex)] = cell
             }
-            null
+            acc
         }
 
-    // Round 2
-    val elvesMoving = proposals
-        .groupBy { it.second }
-        .filter { it.value.size == 1 }
+    var directionIndex = 0
+    var round = 0
 
-    elvesMoving.forEach { destination, (originDestination) ->
-        world[originDestination.first] = '.'
-        world[destination] = '#'
+    while (if (part2) true else round < 10) {
+        // Round 1
+        val proposals = world
+            .filter { it.value == '#' }
+            .mapNotNull { (point, _) ->
+                // Can we move?
+                if (ADJACENT_OFFSETS.any { (dx, dy) -> world[Point(point.x + dx, point.y + dy)] == '#' }) {
+                    // Try to move
+                    var tries = 0
+                    while (tries < DIRECTIONS.size) {
+                        val direction = DIRECTIONS[(directionIndex + tries) % DIRECTIONS.size]
+                        if (ADJACENT_OFFSET[direction]!!.all { (dx, dy) -> world[Point(point.x + dx, point.y + dy)] != '#' }) {
+                            val newPoint = when (direction) {
+                                NORTH -> Point(point.x, point.y - 1)
+                                SOUTH -> Point(point.x, point.y + 1)
+                                WEST -> Point(point.x - 1, point.y)
+                                EAST -> Point(point.x + 1, point.y)
+                                else -> throw IllegalArgumentException()
+                            }
+                            return@mapNotNull point to newPoint
+                        }
+                        tries++
+                    }
+                }
+                null
+            }
+
+        // Round 2
+        val elvesMoving = proposals
+            .groupBy { it.second }
+            .filter { it.value.size == 1 }
+
+        if (part2 && elvesMoving.isEmpty()) {
+            return round + 1
+        }
+
+        elvesMoving.forEach { destination, (originDestination) ->
+            world[originDestination.first] = '.'
+            world[destination] = '#'
+        }
+
+        // dumpWorld(world)
+
+        directionIndex = (directionIndex + 1) % DIRECTIONS.size
+        round++
     }
 
-    // dumpWorld()
+    if (part2) {
+        return 0
+    } else {
+        val minX = world.filter { it.value == '#' }.minOf { it.key.x }
+        val maxX = world.filter { it.value == '#' }.maxOf { it.key.x }
+        val minY = world.filter { it.value == '#' }.minOf { it.key.y }
+        val maxY = world.filter { it.value == '#' }.maxOf { it.key.y }
 
-    directionIndex = (directionIndex + 1) % DIRECTIONS.size
-    round++
+        return (maxX - minX + 1) * (maxY - minY + 1) - world.count { it.value == '#' }
+    }
 }
 
-fun dumpWorld() {
+fun dumpWorld(world: World) {
     val minX = world.filter { it.value == '#' }.minOf { it.key.x }
     val maxX = world.filter { it.value == '#' }.maxOf { it.key.x }
     val minY = world.filter { it.value == '#' }.minOf { it.key.y }
@@ -96,11 +113,5 @@ fun dumpWorld() {
     println()
 }
 
-val minX = world.filter { it.value == '#' }.minOf { it.key.x }
-val maxX = world.filter { it.value == '#' }.maxOf { it.key.x }
-val minY = world.filter { it.value == '#' }.minOf { it.key.y }
-val maxY = world.filter { it.value == '#' }.maxOf { it.key.y }
-
-val emptyCount = (maxX - minX + 1) * (maxY - minY + 1) - world.count { it.value == '#' }
-
-emptyCount
+println(simulate(false))
+println(simulate(true))
